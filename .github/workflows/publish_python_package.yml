@@ -1,0 +1,103 @@
+name: Publish Python Package
+
+on:
+    workflow_call:
+        inputs:
+            package-name:
+                description: 'PyPI package name'
+                type: string
+                required: true
+            python-version:
+                description: 'Python version used to build the package'
+                type: string
+                required: false
+                default: '3.14'
+
+jobs:
+    check-tag-from-main-branch:
+        runs-on: ubuntu-24.04
+        steps:
+            -   uses: actions/checkout@v7.0.1
+                with:
+                    fetch-depth: 0
+            -   name: Check if tag is on main branch
+                run: |
+                    if git merge-base --is-ancestor $(git rev-parse ${{ github.ref }}) $(git rev-parse refs/remotes/origin/main); then
+                        echo "Tag is from main branch"
+                    else
+                        echo "Tag is not from main branch"
+                        exit 1
+                    fi
+    check-version-matches-tag:
+        runs-on: ubuntu-24.04
+        steps:
+            -   uses: actions/checkout@v7.0.1
+            -   uses: astral-sh/setup-uv@v9.0.0
+                with:
+                    # renovate: datasource=github-releases depName=astral-sh/uv
+                    version: "0.12.1"
+            -   name: Check if project version matches the tag
+                run: |
+                    PACKAGE_VERSION=$(uv version --short)
+                    if [ "v${PACKAGE_VERSION}" != "${{ github.ref_name }}" ]; then
+                        echo "Project version ${PACKAGE_VERSION} doesn't match tag ${{ github.ref_name }}"
+                        exit 1
+                    fi
+    check-version-already-exist:
+        runs-on: ubuntu-24.04
+        steps:
+            -   uses: actions/checkout@v7.0.1
+            -   uses: astral-sh/setup-uv@v9.0.0
+                with:
+                    # renovate: datasource=github-releases depName=astral-sh/uv
+                    version: "0.12.1"
+            -   name: Check if version already exists on PyPI
+                run: |
+                    PACKAGE_VERSION=$(uv version --short)
+                    STATUS=$(curl -s -o /dev/null -w '%{http_code}' "https://pypi.org/pypi/${{ inputs.package-name }}/${PACKAGE_VERSION}/json")
+                    if [ "$STATUS" = "200" ]; then
+                        echo "Version ${PACKAGE_VERSION} already exists"
+                        exit 1
+                    else
+                        echo "Version ${PACKAGE_VERSION} doesn't exist"
+                    fi
+    publish-package:
+        runs-on: ubuntu-24.04
+        needs:
+            - check-tag-from-main-branch
+            - check-version-matches-tag
+            - check-version-already-exist
+        environment:
+            name: pypi
+            url: https://pypi.org/p/${{ inputs.package-name }}
+        permissions:
+            contents: write
+            id-token: write
+        steps:
+            -   uses: actions/checkout@v7.0.1
+            -   uses: astral-sh/setup-uv@v9.0.0
+                with:
+                    # renovate: datasource=github-releases depName=astral-sh/uv
+                    version: "0.12.1"
+                    python-version: ${{ inputs.python-version }}
+            -   name: Build release distributions
+                run: uv build
+            # Publishing via PyPI trusted publishing (OIDC); it also generates
+            # PEP 740 attestations, so a separate Sigstore signing step is not needed.
+            -   name: Publish release distributions
+                uses: pypa/gh-action-pypi-publish@release/v1
+            -   name: Create GitHub Release
+                env:
+                    GITHUB_TOKEN: ${{ github.token }}
+                run: >-
+                    gh release create
+                    '${{ github.ref_name }}'
+                    --repo '${{ github.repository }}'
+                    --generate-notes
+            -   name: Upload artifacts to GitHub Release
+                env:
+                    GITHUB_TOKEN: ${{ github.token }}
+                run: >-
+                    gh release upload
+                    '${{ github.ref_name }}' dist/**
+                    --repo '${{ github.repository }}'

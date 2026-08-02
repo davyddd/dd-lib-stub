@@ -1,0 +1,31 @@
+# {{ package_name }}
+
+[![pypi](https://img.shields.io/pypi/v/{{ package_name }}.svg)](https://pypi.python.org/pypi/{{ package_name }})
+[![downloads](https://static.pepy.tech/badge/{{ package_name }}/month)](https://pepy.tech/project/{{ package_name }})
+[![versions](https://img.shields.io/pypi/pyversions/{{ package_name }}.svg)](https://github.com/davyddd/{{ package_name }})
+[![codecov](https://codecov.io/gh/davyddd/{{ package_name }}/branch/main/graph/badge.svg)](https://app.codecov.io/github/davyddd/{{ package_name }})
+[![license](https://img.shields.io/github/license/davyddd/{{ package_name }}.svg)](https://github.com/davyddd/{{ package_name }}/blob/main/LICENSE)
+
+{{ package_description }}
+
+## Installation
+
+Install the library using pip:
+```bash
+pip install {{ package_name }}
+```
+
+## Development
+
+The project runs entirely in Docker. Requires Docker and [Fabric](https://www.fabfile.org/) on the host:
+
+```bash
+fab build      # build the dev image
+fab tests      # run pytest
+fab linters    # run ruff (with --fix), ty and complexipy
+fab shell      # IPython inside the container
+fab bash       # bash inside the container
+```
+
+This project was generated from [dd-lib-stub](https://github.com/davyddd/dd-lib-stub);
+run `copier update` to pull in template updates.

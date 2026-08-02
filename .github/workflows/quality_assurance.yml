@@ -1,0 +1,111 @@
+name: Quality Assurance
+
+on:
+    workflow_call:
+        inputs:
+            package-name:
+                description: 'Package import name (used for coverage report)'
+                type: string
+                required: true
+            python-versions:
+                description: 'JSON array of Python versions for the test matrix, e.g. ["3.10", "3.11"]'
+                type: string
+                required: true
+            default-python-version:
+                description: 'Python version used for linters and coverage'
+                type: string
+                required: false
+                default: '3.14'
+            matrix-dependency:
+                description: 'Optional dependency to test across multiple versions, e.g. pydantic[email]'
+                type: string
+                required: false
+                default: ''
+            matrix-dependency-versions:
+                description: 'JSON array of versions for matrix-dependency'
+                type: string
+                required: false
+                default: '[""]'
+            matrix-exclude:
+                description: 'JSON array of {python-version, dependency-version} combinations to skip'
+                type: string
+                required: false
+                default: '[]'
+            upload-coverage:
+                description: 'Collect coverage and upload results to Codecov'
+                type: boolean
+                required: false
+                default: false
+        secrets:
+            CODECOV_TOKEN:
+                required: false
+
+jobs:
+    linters:
+        runs-on: ubuntu-24.04
+        strategy:
+            fail-fast: false
+            matrix:
+                command: [
+                    "ruff check . --config ruff.toml",
+                    "ruff format . --check --config ruff.toml",
+                    "ty check --python .venv",
+                    "complexipy"
+                ]
+        steps:
+            -   uses: actions/checkout@v7.0.1
+            -   uses: astral-sh/setup-uv@v9.0.0
+                with:
+                    # renovate: datasource=github-releases depName=astral-sh/uv
+                    version: "0.12.1"
+                    python-version: ${{ inputs.default-python-version }}
+                    enable-cache: true
+            -   name: Install dependencies
+                run: uv sync --frozen --all-groups
+            -   name: Run linter
+                run: uv run --no-sync ${{ matrix.command }}
+    tests:
+        runs-on: ubuntu-24.04
+        strategy:
+            fail-fast: false
+            matrix:
+                python-version: ${{ fromJSON(inputs.python-versions) }}
+                dependency-version: ${{ fromJSON(inputs.matrix-dependency-versions) }}
+                exclude: ${{ fromJSON(inputs.matrix-exclude) }}
+        steps:
+            -   uses: actions/checkout@v7.0.1
+            -   uses: astral-sh/setup-uv@v9.0.0
+                with:
+                    # renovate: datasource=github-releases depName=astral-sh/uv
+                    version: "0.12.1"
+                    python-version: ${{ matrix.python-version }}
+                    enable-cache: true
+            -   name: Install dependencies
+                run: uv sync --frozen --group test
+            -   name: Install ${{ inputs.matrix-dependency }} ${{ matrix.dependency-version }}
+                if: inputs.matrix-dependency != ''
+                run: uv pip install '${{ inputs.matrix-dependency }}==${{ matrix.dependency-version }}'
+            -   name: Run tests
+                run: uv run --no-sync pytest
+    coverage:
+        if: inputs.upload-coverage
+        runs-on: ubuntu-24.04
+        steps:
+            -   uses: actions/checkout@v7.0.1
+            -   uses: astral-sh/setup-uv@v9.0.0
+                with:
+                    # renovate: datasource=github-releases depName=astral-sh/uv
+                    version: "0.12.1"
+                    python-version: ${{ inputs.default-python-version }}
+                    enable-cache: true
+            -   name: Install dependencies
+                run: uv sync --frozen --group test
+            -   name: Run tests with coverage
+                run: uv run --no-sync pytest --cov=${{ inputs.package-name }} --cov-report=xml
+            -   name: Upload results to Codecov
+                uses: codecov/codecov-action@v7.0.0
+                with:
+                    verbose: true
+                    files: ./coverage.xml
+                    flags: unittests
+                    token: ${{ secrets.CODECOV_TOKEN }}

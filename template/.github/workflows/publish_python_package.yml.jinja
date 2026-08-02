@@ -1,0 +1,32 @@
+{%- set min_minor = min_python_version.split('.')[1] | int -%}
+{%- set max_minor = max_python_version.split('.')[1] | int -%}
+name: Publish Python Package
+
+on:
+    push:
+        tags:
+            - "v*.*.*"
+
+jobs:
+    quality-assurance:
+        uses: davyddd/dd-lib-stub/.github/workflows/quality_assurance.yml@v1
+        with:
+            package-name: {{ package_name }}
+            python-versions: '[{% for minor in range(min_minor, max_minor + 1) %}"3.{{ minor }}"{% if not loop.last %}, {% endif %}{% endfor %}]'
+            default-python-version: '{{ max_python_version }}'
+{%- if matrix_dependency %}
+            matrix-dependency: '{{ matrix_dependency }}'
+            matrix-dependency-versions: '{{ matrix_dependency_versions }}'
+            matrix-exclude: '{{ matrix_exclude }}'
+{%- endif %}
+            upload-coverage: true
+        secrets: inherit
+    publish:
+        needs: quality-assurance
+        uses: davyddd/dd-lib-stub/.github/workflows/publish_python_package.yml@v1
+        with:
+            package-name: {{ package_name }}
+            python-version: '{{ max_python_version }}'
+        permissions:
+            contents: write
+            id-token: write

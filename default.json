@@ -1,0 +1,24 @@
+{
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "extends": [
+        "config:recommended"
+    ],
+    "labels": ["dependencies"],
+    "packageRules": [
+        {
+            "description": "Group all GitHub Actions updates into a single PR",
+            "matchManagers": ["github-actions"],
+            "groupName": "github actions"
+        }
+    ],
+    "customManagers": [
+        {
+            "customType": "regex",
+            "description": "Update versions pinned next to a `# renovate: datasource=... depName=...` comment (e.g. the uv version in setup-uv steps)",
+            "managerFilePatterns": ["/\\.github/workflows/.*\\.ya?ml$/"],
+            "matchStrings": [
+                "# renovate: datasource=(?<datasource>[a-z-]+) depName=(?<depName>\\S+)\\n\\s*version: \"(?<currentValue>[^\"]+)\""
+            ]
+        }
+    ]
+}

@@ -1,0 +1,39 @@
+{%- set min_minor = min_python_version.split('.')[1] | int -%}
+{%- set max_minor = max_python_version.split('.')[1] | int -%}
+[project]
+name = "{{ package_name }}"
+description = "{{ package_description }}"
+version = "0.0.1"
+authors = [{ name = "davyddd" }]
+license = "MIT"
+license-files = ["LICENSE"]
+readme = "README.md"
+requires-python = ">={{ min_python_version }},<3.{{ max_minor + 1 }}"
+keywords = [{% for keyword in package_keywords.split(',') %}"{{ keyword.strip() }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+dependencies = []
+
+[project.urls]
+Repository = "https://github.com/davyddd/{{ package_name }}"
+
+[dependency-groups]
+dev = [
+    "ipdb==0.13.9",
+    "ipython==8.12.3",
+]
+test = [
+    "pytest==9.0.3",
+    "pytest-cov==5.0.0",
+    "parameterized==0.9.0",
+]
+linter = [
+    "ruff==0.15.10",
+    "ty==0.0.15",
+    "complexipy==5.2.0",
+]
+
+[tool.uv.build-backend]
+module-root = ""
+
+[build-system]
+requires = ["uv_build>=0.12.0,<0.13.0"]
+build-backend = "uv_build"

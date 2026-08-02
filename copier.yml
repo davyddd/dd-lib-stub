@@ -1,0 +1,61 @@
+_subdirectory: template
+_answers_file: .copier-answers.yml
+
+# Files that are only generated once and never overwritten by `copier update`
+_skip_if_exists:
+    - README.md
+    - "{{ package_name }}/__init__.py"
+    - tests/__init__.py
+
+package_name:
+    type: str
+    help: Package name, used both on PyPI and as the import name (e.g. ddutils)
+    validator: "{% if not (package_name | regex_search('^[a-z][a-z0-9_]+$')) %}package_name must be a valid lowercase Python identifier{% endif %}"
+
+package_description:
+    type: str
+    help: Short package description (used on PyPI)
+
+package_keywords:
+    type: str
+    help: Comma-separated PyPI keywords
+    default: "python, {{ package_name }}"
+
+min_python_version:
+    type: str
+    help: Minimum supported Python version
+    choices: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
+    default: "3.10"
+
+max_python_version:
+    type: str
+    help: Maximum supported Python version (defines the CI test matrix together with min_python_version)
+    choices: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
+    default: "3.14"
+
+docker_python_version:
+    type: str
+    help: Python version for the local Docker image (full version, used as python:<version>-slim)
+    default: "{{ max_python_version }}.0"
+
+matrix_dependency:
+    type: str
+    help: Optional dependency to test across multiple versions in CI (e.g. pydantic[email]); leave empty to skip
+    default: ""
+
+matrix_dependency_versions:
+    type: str
+    help: JSON array of versions for the matrix dependency, e.g. ["2.1", "2.13"]
+    default: '[""]'
+    when: "{{ matrix_dependency != '' }}"
+
+matrix_exclude:
+    type: str
+    help: 'JSON array of matrix combinations to skip, e.g. [{"python-version": "3.13", "dependency-version": "2.1"}]'
+    default: "[]"
+    when: "{{ matrix_dependency != '' }}"
+
+copyright_year:
+    type: int
+    help: Year for the LICENSE copyright line
+    default: 2026
