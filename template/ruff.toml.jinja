@@ -61,9 +61,9 @@ ignore = [
     "Q000", "Q001", "Q002", "Q003",
     # flake8-todos
     "TD003",
-    # pyupgrade
+{% if min_minor < 10 %}    # pyupgrade: keep `Optional[...]` / `List[...]` spelling while Python < 3.10 is supported
     "UP006", "UP007", "UP035", "UP045",
-]
+{% endif %}]
 
 [lint.extend-per-file-ignores]
 "__init__.py" = ["F401"]
