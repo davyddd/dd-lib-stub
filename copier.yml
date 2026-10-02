@@ -38,22 +38,14 @@ docker_python_version:
     help: Python version for the local Docker image (full version, used as python:<version>-slim)
     default: "{{ max_python_version }}.0"
 
-matrix_dependency:
+test_matrix:
     type: str
-    help: Optional dependency to test across multiple versions in CI (e.g. pydantic[email]); leave empty to skip
-    default: ""
-
-matrix_dependency_versions:
-    type: str
-    help: JSON array of versions for the matrix dependency, e.g. ["2.1", "2.13"]
-    default: '[""]'
-    when: "{{ matrix_dependency != '' }}"
-
-matrix_exclude:
-    type: str
-    help: 'JSON array of matrix combinations to skip, e.g. [{"python-version": "3.13", "dependency-version": "2.1"}]'
-    default: "[]"
-    when: "{{ matrix_dependency != '' }}"
+    help: >-
+        JSON object with extra axes for the CI test matrix (the `python-version` axis is added automatically).
+        Every axis value is a pip install spec, `include`/`exclude` work as in GitHub Actions. Leave {} to skip.
+        Example: {"pydantic": ["pydantic[email]==2.1", "pydantic[email]==2.13"], "exclude": [{"python-version": "3.13", "pydantic": "pydantic[email]==2.1"}]}
+    default: "{}"
+    validator: "{% if not (test_matrix | trim | regex_search('^\\{[\\s\\S]*\\}$')) %}test_matrix must be a JSON object{% endif %}"
 
 copyright_year:
     type: int

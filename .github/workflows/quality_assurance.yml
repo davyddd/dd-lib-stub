@@ -7,8 +7,13 @@ on:
                 description: 'Package import name (used for coverage report)'
                 type: string
                 required: true
-            python-versions:
-                description: 'JSON array of Python versions for the test matrix, e.g. ["3.10", "3.11"]'
+            test-matrix:
+                description: >-
+                    JSON object used verbatim as the GitHub `strategy.matrix` of the tests job.
+                    `python-version` is the only mandatory axis; every other axis holds pip install specs
+                    (e.g. "pydantic[email]==2.1") and all of them are installed on top of the locked
+                    environment before running tests. `include`/`exclude` work as in GitHub Actions.
+                    Example: {"python-version": ["3.10", "3.11"], "pydantic": ["pydantic[email]==2.1", "pydantic[email]==2.13"]}
                 type: string
                 required: true
             default-python-version:
@@ -16,21 +21,6 @@ on:
                 type: string
                 required: false
                 default: '3.14'
-            matrix-dependency:
-                description: 'Optional dependency to test across multiple versions, e.g. pydantic[email]'
-                type: string
-                required: false
-                default: ''
-            matrix-dependency-versions:
-                description: 'JSON array of versions for matrix-dependency'
-                type: string
-                required: false
-                default: '[""]'
-            matrix-exclude:
-                description: 'JSON array of {python-version, dependency-version} combinations to skip'
-                type: string
-                required: false
-                default: '[]'
             upload-coverage:
                 description: 'Collect coverage and upload results to Codecov'
                 type: boolean
@@ -68,10 +58,7 @@ jobs:
         runs-on: ubuntu-24.04
         strategy:
             fail-fast: false
-            matrix:
-                python-version: ${{ fromJSON(inputs.python-versions) }}
-                dependency-version: ${{ fromJSON(inputs.matrix-dependency-versions) }}
-                exclude: ${{ fromJSON(inputs.matrix-exclude) }}
+            matrix: ${{ fromJSON(inputs.test-matrix) }}
         steps:
             -   uses: actions/checkout@v7.0.1
             -   uses: astral-sh/setup-uv@v9.0.0
@@ -82,9 +69,18 @@ jobs:
                     enable-cache: true
             -   name: Install dependencies
                 run: uv sync --frozen --group test
-            -   name: Install ${{ inputs.matrix-dependency }} ${{ matrix.dependency-version }}
-                if: inputs.matrix-dependency != ''
-                run: uv pip install '${{ inputs.matrix-dependency }}==${{ matrix.dependency-version }}'
+            # Every matrix axis except `python-version` is a pip install spec; install them all
+            # into the synced .venv (pytest runs with --no-sync so uv won't revert them).
+            -   name: Install matrix dependencies
+                env:
+                    MATRIX: ${{ toJSON(matrix) }}
+                run: |
+                    SPECS=$(echo "$MATRIX" | jq -r 'del(."python-version") | .[]')
+                    if [ -n "$SPECS" ]; then
+                        echo "$SPECS" | xargs uv pip install
+                    else
+                        echo "No matrix dependencies to install"
+                    fi
             -   name: Run tests
                 run: uv run --no-sync pytest
     coverage:

@@ -26,7 +26,22 @@ fab build && fab tests && fab linters
 ```
 
 Answers are stored in `.copier-answers.yml`. Per-library specifics (supported Python range, extra CI
-dependency matrix like pydantic for dddesign) are template variables — they are never overwritten by updates.
+test matrix) are template variables — they are never overwritten by updates.
+
+### CI test matrix
+
+The tests job of the reusable workflow takes a single `test-matrix` input: a JSON object used verbatim as the
+GitHub `strategy.matrix`. The `python-version` axis is generated from `min_python_version`/`max_python_version`;
+every other axis is a list of pip install specs that get installed on top of the locked environment, so a
+library can be tested against any number of dependency versions at once. `include`/`exclude` work as in
+GitHub Actions. The extra axes come from the `test_matrix` copier answer, e.g. for dddesign:
+
+```json
+{
+  "pydantic": ["pydantic[email]==2.1", "pydantic[email]==2.11", "pydantic[email]==2.12", "pydantic[email]==2.13"],
+  "exclude": [{"python-version": "3.13", "pydantic": "pydantic[email]==2.1"}]
+}
+```
 
 After pushing to GitHub:
 - add a PyPI [trusted publisher](https://docs.pypi.org/trusted-publishers/): repository `davyddd/<name>`,
