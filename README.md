@@ -45,9 +45,12 @@ GitHub Actions. The extra axes come from the `test_matrix` copier answer, e.g. f
 
 After pushing to GitHub:
 - add a PyPI [trusted publisher](https://docs.pypi.org/trusted-publishers/): repository `davyddd/<name>`,
-  workflow `publish_python_package.yml`, environment `pypi`;
-- create the `pypi` environment in the repo settings;
-- add the `CODECOV_TOKEN` secret.
+  workflow `publish_python_package.yml`, environment `pypi` (set the environment, do not leave it open);
+- create the `pypi` environment in the repo settings and restrict its deployments to tags `v*`;
+- add the `CODECOV_TOKEN` secret;
+- rulesets: tags `v*` — no deletion / update (bypass for repository admins); default branch — pull requests only,
+  no force pushes, required status check `quality-assurance / passed`;
+- make sure the Renovate app has access to the repository.
 
 ## Propagating updates to existing libraries
 

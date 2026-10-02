@@ -83,6 +83,18 @@ jobs:
                     fi
             -   name: Run tests
                 run: uv run --no-sync pytest
+    # Single check to require in branch rulesets instead of listing every linter / matrix job
+    passed:
+        runs-on: ubuntu-24.04
+        needs: [linters, tests]
+        if: always()
+        steps:
+            -   name: Check that linters and tests succeeded
+                run: |
+                    if [ "${{ needs.linters.result }}" != "success" ] || [ "${{ needs.tests.result }}" != "success" ]; then
+                        echo "linters: ${{ needs.linters.result }}, tests: ${{ needs.tests.result }}"
+                        exit 1
+                    fi
     coverage:
         if: inputs.upload-coverage
         runs-on: ubuntu-24.04
