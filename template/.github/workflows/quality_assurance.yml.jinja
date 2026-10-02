@@ -19,7 +19,7 @@ concurrency:
 
 jobs:
     quality-assurance:
-        uses: davyddd/dd-lib-stub/.github/workflows/quality_assurance.yml@v1
+        uses: davyddd/dd-lib-stub/.github/workflows/quality_assurance.yml@{{ _copier_answers._commit }}
         with:
             package-name: {{ package_name }}
             test-matrix: '{{ matrix | to_json }}'

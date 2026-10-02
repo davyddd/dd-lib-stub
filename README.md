@@ -53,9 +53,9 @@ After pushing to GitHub:
 
 Changes are delivered through two independent channels:
 
-- **CI logic** (steps, action versions, uv version in CI): edit the reusable workflows here and move the `v1`
-  tag — every library picks it up on the next run, no commits needed downstream. Breaking changes to workflow
-  inputs → publish a `v2` tag and bump the stubs via the template.
+- **CI logic** (steps, action versions, uv version in CI): edit the reusable workflows here and release a new
+  tag. Caller stubs pin the exact template version they were generated from (`@vX.Y.Z`), so the libraries pick
+  up the change either via `copier update` or through the Renovate PR that bumps the `uses:` reference.
 - **Files living inside each repo** (lint configs, Dockerfile, fabfile, pyproject skeleton, workflow stubs):
   edit `template/`, commit, tag, then in each library run:
 
@@ -79,10 +79,6 @@ attestations) and creates a GitHub release with the artifacts.
 
 ## Versioning of this repo
 
-Tag releases as `vX.Y.Z` and keep a moving `v1` major tag:
-
-```bash
-git tag -f v1 && git push -f origin v1
-```
-
-The caller stubs reference `@v1`; copier tracks its own tags for `copier update`.
+Tag every release as `vX.Y.Z`. The same tag serves both consumers: copier records it in
+`.copier-answers.yml` (`_commit`) and the workflow stubs reference it in `uses: davyddd/dd-lib-stub/...@vX.Y.Z`,
+so a library is always on one well-defined template version. Tags are never moved.
