@@ -1,0 +1,31 @@
+name: GitHub Release
+
+on:
+    workflow_call:
+
+jobs:
+    github-release:
+        runs-on: ubuntu-24.04
+        permissions:
+            contents: write
+        steps:
+            -   uses: actions/checkout@v7.0.1
+            -   uses: actions/download-artifact@v8.0.1
+                with:
+                    name: dist
+                    path: dist/
+            -   name: Create GitHub Release
+                env:
+                    GITHUB_TOKEN: ${{ github.token }}
+                run: >-
+                    gh release create
+                    '${{ github.ref_name }}'
+                    --repo '${{ github.repository }}'
+                    --generate-notes
+            -   name: Upload artifacts to GitHub Release
+                env:
+                    GITHUB_TOKEN: ${{ github.token }}
+                run: >-
+                    gh release upload
+                    '${{ github.ref_name }}' dist/**
+                    --repo '${{ github.repository }}'

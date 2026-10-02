@@ -1,4 +1,4 @@
-name: Publish Python Package
+name: Build Python Package
 
 on:
     workflow_call:
@@ -61,18 +61,12 @@ jobs:
                     else
                         echo "Version ${PACKAGE_VERSION} doesn't exist"
                     fi
-    publish-package:
+    build-package:
         runs-on: ubuntu-24.04
         needs:
             - check-tag-from-main-branch
             - check-version-matches-tag
             - check-version-already-exist
-        environment:
-            name: pypi
-            url: https://pypi.org/p/${{ inputs.package-name }}
-        permissions:
-            contents: write
-            id-token: write
         steps:
             -   uses: actions/checkout@v7.0.1
             -   uses: astral-sh/setup-uv@v9.0.0
@@ -82,22 +76,11 @@ jobs:
                     python-version: ${{ inputs.python-version }}
             -   name: Build release distributions
                 run: uv build
-            # Publishing via PyPI trusted publishing (OIDC); it also generates
-            # PEP 740 attestations, so a separate Sigstore signing step is not needed.
-            -   name: Publish release distributions
-                uses: pypa/gh-action-pypi-publish@release/v1
-            -   name: Create GitHub Release
-                env:
-                    GITHUB_TOKEN: ${{ github.token }}
-                run: >-
-                    gh release create
-                    '${{ github.ref_name }}'
-                    --repo '${{ github.repository }}'
-                    --generate-notes
-            -   name: Upload artifacts to GitHub Release
-                env:
-                    GITHUB_TOKEN: ${{ github.token }}
-                run: >-
-                    gh release upload
-                    '${{ github.ref_name }}' dist/**
-                    --repo '${{ github.repository }}'
+            # The upload to PyPI happens in the library's own workflow: PyPI trusted publishing verifies
+            # the workflow file of the publishing job, and a reusable workflow fails that check.
+            -   name: Upload distributions as a workflow artifact
+                uses: actions/upload-artifact@v7.0.1
+                with:
+                    name: dist
+                    path: dist/
+                    if-no-files-found: error

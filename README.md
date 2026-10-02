@@ -73,9 +73,12 @@ Changes are delivered through two independent channels:
 ## Releasing a library
 
 Bump `version` in `pyproject.toml` (e.g. `uv version --bump minor`), merge to `main`, then push a `v*.*.*`
-tag matching the version. The publish pipeline checks that the tag is on `main`, matches the project version
-and is not already on PyPI, runs the full QA matrix, publishes to PyPI (trusted publishing + PEP 740
-attestations) and creates a GitHub release with the artifacts.
+tag matching the version. The publish pipeline runs the full QA matrix, checks that the tag is on `main`,
+matches the project version and is not already on PyPI, builds the distributions (`build_python_package.yml`),
+uploads them to PyPI and creates a GitHub release with the artifacts (`github_release.yml`).
+
+The PyPI upload step itself lives in the library's workflow stub, not in a reusable workflow: PyPI trusted
+publishing verifies the workflow file of the publishing job and rejects reusable workflows.
 
 ## Versioning of this repo
 
