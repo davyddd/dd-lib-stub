@@ -17,8 +17,8 @@ Repository = "https://github.com/davyddd/{{ package_name }}"
 
 [dependency-groups]
 dev = [
-    "ipdb==0.13.9",
-    "ipython==8.12.3",
+    "ipdb==0.13.13",
+    {% if min_minor >= 11 %}"ipython==9.16.1",{% else %}"ipython==8.12.3",  # ipython 9 requires Python >= 3.11{% endif %}
 ]
 test = [
     {% if min_minor >= 10 %}"pytest==9.0.3",{% else %}"pytest==8.1.1",  # pytest 9 requires Python >= 3.10{% endif %}
@@ -28,7 +28,7 @@ test = [
 linter = [
     "ruff==0.15.10",
     "ty==0.0.15",
-    "complexipy==5.2.0",
+    "complexipy==8.0.1",
 ]
 
 [tool.uv.build-backend]

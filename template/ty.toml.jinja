@@ -13,6 +13,13 @@ exclude = [
     "__pycache__",
     ".ruff_cache",
     ".pytest_cache",
+    ".complexipy_cache",
     ".venv",
     "fabfile.py",
 ]
+
+[rules]
+# Libraries support several Python versions: a `# type: ignore` needed on one of them is unused on another.
+unused-type-ignore-comment = "ignore"
+# Libraries deprecate their own API and keep testing it.
+deprecated = "ignore"

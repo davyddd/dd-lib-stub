@@ -4,6 +4,7 @@ exclude = [
     "__pycache__",
     ".ruff_cache",
     ".pytest_cache",
+    ".complexipy_cache",
     ".venv",
     "fabfile.py",
 ]

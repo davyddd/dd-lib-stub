@@ -8,7 +8,9 @@ exclude = [
     "__pycache__",
     ".ruff_cache",
     ".pytest_cache",
+    ".complexipy_cache",
     ".venv",
+    "fabfile.py",
 ]
 line-length = 128
 target-version = "py{{ min_python_version | replace('.', '') }}"
@@ -17,7 +19,6 @@ output-format = "concise"
 
 [lint]
 preview = true
-external = ["complexipy"]
 # Avialable rules
 # https://docs.astral.sh/ruff/rules/
 select = [
@@ -63,7 +64,9 @@ ignore = [
     # pyupgrade
     "UP006", "UP007", "UP035", "UP045",
 ]
-extend-per-file-ignores = { "__init__.py" = ["F401"] }
+
+[lint.extend-per-file-ignores]
+"__init__.py" = ["F401"]
 
 
 [lint.isort]
@@ -85,4 +88,4 @@ inline-quotes = "single"
 [format]
 quote-style = "single"
 indent-style = "space"
-skip-magic-trailing-comma = true
+skip-magic-trailing-comma = false
