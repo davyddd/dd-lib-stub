@@ -26,7 +26,7 @@ fab build && fab tests && fab linters
 ```
 
 Answers are stored in `.copier-answers.yml`. Per-library specifics (supported Python range, extra CI
-test matrix) are template variables — they are never overwritten by updates.
+test matrix) are template variables; the local Docker image always runs on the newest supported Python — they are never overwritten by updates.
 
 ### CI test matrix
 

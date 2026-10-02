@@ -1,4 +1,5 @@
-FROM python:{{ docker_python_version }}-slim
+# Local development always runs on the newest supported Python (latest patch release)
+FROM python:{{ max_python_version }}-slim
 
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8

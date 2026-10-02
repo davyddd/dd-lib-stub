@@ -33,11 +33,6 @@ max_python_version:
     choices: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
     default: "3.14"
 
-docker_python_version:
-    type: str
-    help: Python version for the local Docker image (full version, used as python:<version>-slim)
-    default: "{{ max_python_version }}.0"
-
 test_matrix:
     type: str
     help: >-
