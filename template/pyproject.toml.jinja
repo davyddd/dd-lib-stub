@@ -10,6 +10,14 @@ license-files = ["LICENSE"]
 readme = "README.md"
 requires-python = ">={{ min_python_version }},<3.{{ max_minor + 1 }}"
 keywords = [{% for keyword in package_keywords.split(',') %}"{{ keyword.strip() }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+# uv_build does not derive these from requires-python (poetry did); PyPI and the pyversions badge read them
+classifiers = [
+    "Programming Language :: Python :: 3",
+{%- for minor in range(min_minor, max_minor + 1) %}
+    "Programming Language :: Python :: 3.{{ minor }}",
+{%- endfor %}
+    "Typing :: Typed",
+]
 dependencies = []
 
 [project.urls]
