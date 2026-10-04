@@ -24,12 +24,3 @@ jobs:
             test-matrix: '{{ matrix | to_json }}'
             default-python-version: '{{ max_python_version }}'
         secrets: inherit
-    coverage:
-        # after the checks and only for pushes to main: pull requests do not upload coverage
-        needs: quality-assurance
-        if: {% raw %}${{ github.event_name == 'push' }}{% endraw %}
-        uses: davyddd/dd-lib-stub/.github/workflows/coverage.yml@{{ _copier_answers._commit }}
-        with:
-            package-name: {{ package_name }}
-            python-version: '{{ max_python_version }}'
-        secrets: inherit

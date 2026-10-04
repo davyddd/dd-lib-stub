@@ -6,8 +6,8 @@ Single source of truth for all `dd*` Python libraries ([ddutils](https://github.
 It solves three problems in one place:
 
 1. **Reusable GitHub Actions workflows** (`.github/workflows/`) — CI logic lives here, each library only keeps thin
-   caller stubs: `quality_assurance.yml` (linters, test matrix), `coverage.yml` (Codecov upload, runs after the checks
-   on pushes to `main` and after the release on tags), `build_python_package.yml`, `github_release.yml`.
+   caller stubs: `quality_assurance.yml` (linters, test matrix), `coverage.yml` (Codecov upload, runs once a release is
+   published), `build_python_package.yml`, `github_release.yml`.
 2. **Copier template** (`copier.yml` + `template/`) — the starting point for a new library and the mechanism
    for propagating boilerplate updates (configs, Dockerfile, fabfile, workflow stubs) to existing ones.
 3. **Renovate preset** (`default.json`) — shared dependency-update rules; libraries reference it from their
