@@ -14,10 +14,8 @@ jobs:
     quality-assurance:
         uses: davyddd/dd-lib-stub/.github/workflows/quality_assurance.yml@{{ _copier_answers._commit }}
         with:
-            package-name: {{ package_name }}
             test-matrix: '{{ matrix | to_json }}'
             default-python-version: '{{ max_python_version }}'
-            upload-coverage: true
         secrets: inherit
     build:
         needs: quality-assurance
@@ -47,3 +45,11 @@ jobs:
         uses: davyddd/dd-lib-stub/.github/workflows/github_release.yml@{{ _copier_answers._commit }}
         permissions:
             contents: write
+    coverage:
+        # last: the coverage report is uploaded only once the release is out
+        needs: release
+        uses: davyddd/dd-lib-stub/.github/workflows/coverage.yml@{{ _copier_answers._commit }}
+        with:
+            package-name: {{ package_name }}
+            python-version: '{{ max_python_version }}'
+        secrets: inherit

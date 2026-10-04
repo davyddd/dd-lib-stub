@@ -3,10 +3,6 @@ name: Quality Assurance
 on:
     workflow_call:
         inputs:
-            package-name:
-                description: 'Package import name (used for coverage report)'
-                type: string
-                required: true
             test-matrix:
                 description: >-
                     JSON object used verbatim as the GitHub `strategy.matrix` of the tests job.
@@ -17,18 +13,10 @@ on:
                 type: string
                 required: true
             default-python-version:
-                description: 'Python version used for linters and coverage'
+                description: 'Python version used for linters'
                 type: string
                 required: false
                 default: '3.14'
-            upload-coverage:
-                description: 'Collect coverage and upload results to Codecov'
-                type: boolean
-                required: false
-                default: false
-        secrets:
-            CODECOV_TOKEN:
-                required: false
 
 jobs:
     linters:
@@ -95,25 +83,3 @@ jobs:
                         echo "linters: ${{ needs.linters.result }}, tests: ${{ needs.tests.result }}"
                         exit 1
                     fi
-    coverage:
-        if: inputs.upload-coverage
-        runs-on: ubuntu-24.04
-        steps:
-            -   uses: actions/checkout@v7.0.1
-            -   uses: astral-sh/setup-uv@v9.0.0
-                with:
-                    # renovate: datasource=github-releases depName=astral-sh/uv
-                    version: "0.12.1"
-                    python-version: ${{ inputs.default-python-version }}
-                    enable-cache: true
-            -   name: Install dependencies
-                run: uv sync --frozen --group test
-            -   name: Run tests with coverage
-                run: uv run --no-sync pytest --cov=${{ inputs.package-name }} --cov-report=xml
-            -   name: Upload results to Codecov
-                uses: codecov/codecov-action@v7.0.0
-                with:
-                    verbose: true
-                    files: ./coverage.xml
-                    flags: unittests
-                    token: ${{ secrets.CODECOV_TOKEN }}

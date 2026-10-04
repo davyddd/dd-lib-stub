@@ -1,0 +1,40 @@
+name: Coverage
+
+on:
+    workflow_call:
+        inputs:
+            package-name:
+                description: 'Package import name (used for the coverage report)'
+                type: string
+                required: true
+            python-version:
+                description: 'Python version used to collect coverage'
+                type: string
+                required: false
+                default: '3.14'
+        secrets:
+            CODECOV_TOKEN:
+                required: false
+
+jobs:
+    coverage:
+        runs-on: ubuntu-24.04
+        steps:
+            -   uses: actions/checkout@v7.0.1
+            -   uses: astral-sh/setup-uv@v9.0.0
+                with:
+                    # renovate: datasource=github-releases depName=astral-sh/uv
+                    version: "0.12.1"
+                    python-version: ${{ inputs.python-version }}
+                    enable-cache: true
+            -   name: Install dependencies
+                run: uv sync --frozen --group test
+            -   name: Run tests with coverage
+                run: uv run --no-sync pytest --cov=${{ inputs.package-name }} --cov-report=xml
+            -   name: Upload results to Codecov
+                uses: codecov/codecov-action@v7.0.0
+                with:
+                    verbose: true
+                    files: ./coverage.xml
+                    flags: unittests
+                    token: ${{ secrets.CODECOV_TOKEN }}
