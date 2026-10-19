@@ -1,9 +1,10 @@
 _subdirectory: template
 _answers_file: .copier-answers.yml
 
-# Files that are only generated once and never overwritten by `copier update`
+# Files that are only generated once and never overwritten by `copier update`. README.md is not among them:
+# its generic parts (badges, Installation, Compatibility, Development) are merged on update, the library's own
+# sections are left alone, and a line both sides changed is marked as a conflict to resolve by hand
 _skip_if_exists:
-    - README.md
     - "{{ package_name }}/__init__.py"
     - tests/__init__.py
 

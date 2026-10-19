@@ -68,8 +68,8 @@ Changes are delivered through two independent channels:
   ```
 
   Copier does a three-way merge against the answers in `.copier-answers.yml`, preserving local changes
-  (dependencies in `pyproject.toml`, the library's Python range, etc.). `README.md` and package skeletons
-  are generated once and never touched by updates (`_skip_if_exists`).
+  (dependencies in `pyproject.toml`, the library's Python range, the library's own README sections, etc.).
+  Package skeletons (`__init__.py`) are generated once and never touched by updates (`_skip_if_exists`).
 
 - **Dependency versions** (actions, uv in Dockerfiles, pinned linters/pytest): Renovate opens PRs in each
   library automatically using the shared preset from this repo.
