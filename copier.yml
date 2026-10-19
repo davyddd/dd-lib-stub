@@ -3,9 +3,8 @@ _answers_file: .copier-answers.yml
 
 # Files that are only generated once and never overwritten by `copier update`. README.md is not among them:
 # its generic parts (badges, Installation, Compatibility, Development) are merged on update, the library's own
-# sections are left alone, and a line both sides changed is marked as a conflict to resolve by hand. A fixed marker
-# comment separates the template's Development section from the library's own sections, and Compatibility closes
-# the file, so a library may append its dependency notes to it
+# sections are left alone, and a line both sides changed is marked as a conflict to resolve by hand. The template
+# ends with Compatibility and a fixed marker comment; the library's own text starts after the marker
 _skip_if_exists:
     - "{{ package_name }}/__init__.py"
     - tests/__init__.py
